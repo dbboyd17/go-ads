@@ -25,26 +25,18 @@ func (ads *ADS) Close() error {
 	return busCloser.Close()
 }
 
-// SetConfigInputMultiplexer sets input multiplexer
-func (ads *ADS) SetConfigInputMultiplexer(configInputMultiplexer ConfigInputMultiplexer) {
-	ads.configInputMultiplexer = uint16(configInputMultiplexer)
-	binary.BigEndian.PutUint16(ads.config, configDefault|ads.configInputMultiplexer|ads.configGain|ads.configDataRate)
-	ads.write[1] = ads.config[0]
-	ads.write[2] = ads.config[1]
-}
-
-// SetConfigGain sets gain
+// SetConfigGain sets configGain
 func (ads *ADS) SetConfigGain(configGain ConfigGain) {
 	ads.configGain = uint16(configGain)
-	binary.BigEndian.PutUint16(ads.config, configDefault|ads.configInputMultiplexer|ads.configGain|ads.configDataRate)
+	binary.BigEndian.PutUint16(ads.config, configDefault|ads.configGain|ads.configDataRate)
 	ads.write[1] = ads.config[0]
 	ads.write[2] = ads.config[1]
 }
 
-// SetConfigDataRate sets data rate
+// SetConfigDataRate sets configDataRate
 func (ads *ADS) SetConfigDataRate(configDataRate ConfigDataRate) {
 	ads.configDataRate = uint16(configDataRate)
-	binary.BigEndian.PutUint16(ads.config, configDefault|ads.configInputMultiplexer|ads.configGain|ads.configDataRate)
+	binary.BigEndian.PutUint16(ads.config, configDefault|ads.configGain|ads.configDataRate)
 	ads.write[1] = ads.config[0]
 	ads.write[2] = ads.config[1]
 }
@@ -97,3 +89,14 @@ Loop:
 
 	close(stopped)
 }
+
+// SetConfigRegister sets configRegister -all parameters must be provided
+func (ads *ADS) SetConfigRegister(val uint16) {
+	// assign values to local variables for later use if needed
+	ads.configDataRate = val & uint16(configDataRateMask)
+	ads.configGain = val & uint16(configGainMask)
+	binary.BigEndian.PutUint16(ads.config, val)
+	ads.write[1] = ads.config[0]
+	ads.write[2] = ads.config[1]
+}
+
